@@ -4,7 +4,7 @@ This was built around the idea of streaming a 24/7 playlist of videos to a remot
 
 requires python 3 and ffmpeg
 
-    git pull https://www.github.com/ghassani/ffstream
+    git clone https://www.github.com/ghassani/ffstream
     cd ffstream
     pip install -r requirements.txt
 
