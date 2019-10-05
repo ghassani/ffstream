@@ -172,16 +172,16 @@ class StreamInfo:
 		return default
 
 	def start(self) -> float:
-		return self.get('start', 0.00)
+		return float(self.get('start', 0.00))
 
 	def duration(self) -> float:
 		if self.has('duration'):
-			return self.get('duration', 0.00)
+			return float(self.get('duration', 0.00))
 		if self.has('tags'):
 			tags = self.get('tags', {})
 			if 'DURATION' in tags and isinstance(tags['DURATION'], str):
 				h, m, s = tags['DURATION'].split(':')
-				return ((int(h) * 60) * 60) + (int(m) * 60) + float(s)
+				return float(((int(h) * 60) * 60) + (int(m) * 60) + float(s))
 		return None
 
 

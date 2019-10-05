@@ -22,12 +22,15 @@ class Application:
 
 		Application.singleton = self
 
+	@staticmethod
 	def name(self) -> str:
 		return 'ffstream'
 
+	@staticmethod
 	def description(self) -> str:
 		return ''
 
+	@staticmethod
 	def version(self) -> str:
 		return Version.version()
 
@@ -161,7 +164,13 @@ class Command:
 
 		if not isinstance(self._parser, CommandArgumentParser):
 			self._parser = CommandArgumentParser(description=self.description())
+			self.add_default_arguments()
+
+	def add_default_arguments(self):
+		if isinstance(self._parser, CommandArgumentParser):
 			self._parser.add_argument('-v', '--verbose', help='Display more verbose output', action='store_true', default=False)
+			self._parser.add_argument('-vv', '--very-verbose', help='Display even more verbose output', action='store_true', default=False)
+			self._parser.add_argument('-vvv', '--extremely-verbose', help='Display even more verbose output', action='store_true', default=False)
 			self._parser.add_argument('-q', '--quiet', help='Display less or no output', action='store_true', default=False)
 
 	def application(self) -> Application:
@@ -201,6 +210,14 @@ class Command:
 
 		:returns: object
 		"""
+		if args.extremely_verbose is True and args.verbose is not True:
+			args.verbose = True
+
+		if args.extremely_verbose is True and args.very_verbose is not True:
+			args.very_verbose = True
+
+		if args.very_verbose is True and args.verbose is not True:
+			args.verbose = True
 
 		self._args = args
 		return self

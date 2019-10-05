@@ -1,0 +1,57 @@
+{
+    "name": "My Playlist",
+    "shuffle": false,
+    "loop": false,
+    "loop_shuffle": false,
+    "output": {
+        "destination": "rmtp://server.com/application/key",
+        "resolution": "1280x720"
+    },
+    "profile": {
+        "encoder": {
+            "global": [],
+            "input": {},
+            "output": {}
+        },
+        "decoder": {
+            "global": [],
+            "input": {},
+            "output": {}
+        }
+    },
+    "filters": [],
+    "entries": [
+        {
+            "title": "",
+            "author": "",
+            "source": "tests/data/short.mp4",
+            "start": 0.0,
+            "end": 11.933008,
+            "duration": 11.933008,
+            "filters": [],
+            "profile": {
+                "decoder": {
+                    "global": [],
+                    "input": {},
+                    "output": {}
+                }
+            }
+        },
+        {
+            "title": "",
+            "author": "",
+            "source": "tests/data/medium.mp4",
+            "start": 0.0,
+            "end": 191.224933,
+            "duration": 191.224933,
+            "filters": [],
+            "profile": {
+                "decoder": {
+                    "global": [],
+                    "input": {},
+                    "output": {}
+                }
+            }
+        }
+    ]
+}

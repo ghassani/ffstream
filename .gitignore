@@ -1,0 +1,9 @@
+.idea/
+test_dir/
+/build
+/dist
+/*.egg
+/*.egg-info
+/**/__pycache__/
+*.pyc
+.pytest_cache

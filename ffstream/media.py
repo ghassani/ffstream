@@ -52,9 +52,7 @@ class FixMediaMetaCommand(Command):
 					vfilecopy = str(vfile) + '_copy.webm'
 
 					copystream = ffmpeg.input(vfile)
-					copystream = ffmpeg.output(copystream, vfilecopy, vcodec='copy', acodec='copy')
-
-					copystream.global_args(['-loglevel', 'error', '-hide_banner']).run()
+					copystream = ffmpeg.output(copystream, vfilecopy, vcodec='copy', acodec='copy').run()
 
 					os.rename(vfile, vfile + '.org')
 					os.rename(vfilecopy, vfile)

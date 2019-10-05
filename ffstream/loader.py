@@ -2,11 +2,12 @@ import os
 import re
 import json
 from pathlib import Path
-
+from collections import OrderedDict
 from .core import Application
 from .util import MediaInfo, MediaInfoError
-from .playlist import Playlist, PlaylistEntry, PlaylistFilterEntry, FfmpegArgContainer
-
+from .playlist import Playlist, PlaylistEntry, PlaylistFilterEntry, PlaylistProfile, PlaylistEntryProfile
+from .filter import FilterValidationException
+from .ffmpeg import ArgumentContainer as FfmpegArgContainer
 """
 PlaylistLoader
 """
@@ -70,7 +71,7 @@ class JsonPlaylistLoader(PlaylistLoader):
 
 		try:
 			fp = open(path, 'r')
-			json_root = json.load(fp)
+			json_root = json.load(fp, object_pairs_hook=OrderedDict)
 			fp.close()
 		except:
 			# TODO: catch specifics
@@ -106,21 +107,32 @@ class JsonPlaylistLoader(PlaylistLoader):
 				if 'options' in f and isinstance(f['options'], dict):
 					options.update(f['options'])
 
-				if not handler.is_valid(options):
-					raise PlaylistLoaderError('Filter handler reported invalid options for %s' % handler.name())
+				try:
+					handler.validate(options)
+				except FilterValidationException as e:
+					raise PlaylistLoaderError('Filter handler reported invalid option: %s' % e.message())
 
 				playlist.add_filter(PlaylistFilterEntry(handler, options))
 
 		if 'entries' in json_root and isinstance(json_root['entries'], list):
-			for e in json_root['entries']:
-				info = MediaInfo(e['source'])
+			for i, e in enumerate(json_root['entries'], 0):
+				self.application().logger().info('Processing Entry %d - %s' % (i, e['source']))
+				try:
+					info = MediaInfo(e['source'])
+				except MediaInfoError as ex:
+					raise PlaylistLoaderError(ex.message(), e)
+
 				entry = PlaylistEntry(info)
 
 				if 'start' in e:
-					entry.set_start(e['start'])
+					entry.set_start(float(e['start']))
 
 				if 'duration' in e:
-					duration = float(e['duration'])
+					if e['duration'] in ('', None, 0.00):
+						duration = float(info.video_stream().duration())
+						self.application().logger().info('Corrected Duration to %f from probed info' % duration)
+					else:
+						duration = float(e['duration'])
 					if info.video_stream_count() > 0:
 						check = info.video_stream().duration()
 						if check not in (0.00, None) and check != duration:
@@ -128,9 +140,15 @@ class JsonPlaylistLoader(PlaylistLoader):
 					entry.set_duration(duration)
 
 				if 'end' in e:
-					entry.set_end(e['end'])
+					entry.set_end(float(e['end']))
 				else:
 					entry.set_end(entry.duration())
+
+				if 'title' in e:
+					entry.set_title(e['title'])
+
+				if 'author' in e:
+					entry.set_author(e['author'])
 
 				if 'filters' in e and isinstance(e['filters'], list):
 					for f in e['filters']:
@@ -150,21 +168,20 @@ class JsonPlaylistLoader(PlaylistLoader):
 						if 'options' in f and isinstance(f['options'], dict):
 							options.update(f['options'])
 
-						if not handler.is_valid(options):
-							raise PlaylistLoaderError('Filter handler reported invalid options for %s' % handler.name())
+						try:
+							handler.validate(options)
+						except FilterValidationException as e:
+							raise PlaylistLoaderError('Filter handler reported invalid options for %s - %s' % (handler.name(), e.message()))
 
 						entry.add_filter(PlaylistFilterEntry(handler, options))
 
-				if 'decoder' in e and isinstance(e['decoder'], dict):
-					entry.set_decoder_args(FfmpegArgContainer(e['decoder']))
+				if 'profile' in e and isinstance(e['profile'], dict):
+					entry.set_profile(PlaylistEntryProfile(e['profile']))
 
 				playlist.add_entry(entry)
 
-		if 'encoder' in json_root and isinstance(json_root['encoder'], dict):
-			playlist.set_encoder_args(FfmpegArgContainer(json_root['encoder']))
-
-		if 'decoder' in json_root and isinstance(json_root['decoder'], dict):
-			playlist.set_decoder_args(FfmpegArgContainer(json_root['decoder']))
+		if 'profile' in json_root and isinstance(json_root['profile'], dict):
+			playlist.set_profile(PlaylistProfile(json_root['profile']))
 
 		return playlist
 

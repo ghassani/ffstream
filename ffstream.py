@@ -4,6 +4,7 @@ from ffstream.core import Application
 from ffstream.generate import GeneratePlaylistCommand
 from ffstream.stream import StreamPlaylistCommand
 from ffstream.media import FixMediaMetaCommand
+from ffstream.testbed import TestbedCommand
 from ffstream.filter import IntervalTextFilter, ImageOverlayFilter, VideoInformationFilter
 
 
@@ -15,6 +16,7 @@ def main():
 		application.add_command(GeneratePlaylistCommand(application))
 		application.add_command(StreamPlaylistCommand(application))
 		application.add_command(FixMediaMetaCommand(application))
+		application.add_command(TestbedCommand(application))
 
 		# Add in filters to the FilterManager
 		application.filter_manager().add(IntervalTextFilter())
